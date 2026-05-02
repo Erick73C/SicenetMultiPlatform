@@ -42,6 +42,9 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.serialization.json)
+            // Room KMP  ← estas dos líneas faltaban
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
