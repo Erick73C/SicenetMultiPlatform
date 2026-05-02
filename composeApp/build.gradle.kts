@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeHotReload)
     //KotlinSerialization
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -51,6 +52,11 @@ kotlin {
             implementation(libs.ktor.client.cio) //Motor Http para desktop
         }
     }
+}
+// KSP para Room -  por plataforma
+dependencies {
+    add("kspAndroid", libs.room.compiler)
+    add("kspJvm", libs.room.compiler)
 }
 
 android {
