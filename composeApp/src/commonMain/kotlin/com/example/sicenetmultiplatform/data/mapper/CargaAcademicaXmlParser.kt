@@ -1,11 +1,9 @@
 package com.example.sicenetmultiplatform.data.mapper
 
-import android.util.Log
-import com.example.sicenetmultiplatform.data.local.entity.CargaAcademicaEntity
-import org.w3c.dom.Element
-import org.xml.sax.InputSource
-import java.io.StringReader
-import javax.xml.parsers.DocumentBuilderFactory
+import com.example.sicenetmultiplatform.data.model.CargaAcademica
+import com.example.sicenetmultiplatform.utils.extraerContenidoXml
+import com.example.sicenetmultiplatform.utils.getCurrentTimeMillis
+import kotlinx.serialization.json.*
 
 object CargaAcademicaXmlParser {
 
@@ -13,56 +11,68 @@ object CargaAcademicaXmlParser {
         xml: String,
         matricula: String,
         semestre: Int
-    ): List<CargaAcademicaEntity> {
+    ): List<CargaAcademica> {
 
-        val lista = mutableListOf<CargaAcademicaEntity>()
+        val lista = mutableListOf<CargaAcademica>()
 
-        val document = DocumentBuilderFactory
-            .newInstance()
-            .newDocumentBuilder()
-            .parse(InputSource(StringReader(xml)))
+        val jsonString = extraerContenidoXml(xml, "getCargaAcademicaByAlumnoResult")
 
-        val resultNode =
-            document.getElementsByTagName("getCargaAcademicaByAlumnoResult")
-                .item(0)
+        if (jsonString.isNullOrBlank()) {
+            println("[CARGA_PARSE] No se encontró contenido en el XML")
+            return emptyList()
+        }
 
-        val jsonString = resultNode?.textContent ?: return emptyList()
+        println("[CARGA_PARSE] Contenido extraído: ${jsonString.take(100)}...")
 
-        if (jsonString.isBlank()) return emptyList()
+        try {
+            val timestamp = getCurrentTimeMillis()
+            val elemento = Json.parseToJsonElement(jsonString.trim())
 
-        Log.d("JSON_DEBUG", jsonString)
+            // El JSON viene como array directo
+            // Ejemplo: [ { "Materia": ..., "Grupo": ..., "Lunes": ... }, ... ]
+            if (elemento is JsonArray) {
+                elemento.forEach { item ->
+                    lista.add(mapToCargaAcademica(item.jsonObject, matricula, semestre, timestamp))
+                }
+            } else {
+                println("[CARGA_PARSE] Formato inesperado, se esperaba un array")
+            }
 
-        val jsonArray = org.json.JSONArray(jsonString)
-
-        for (i in 0 until jsonArray.length()) {
-
-            val materia = jsonArray.getJSONObject(i)
-
-            val horario = listOf(
-                materia.optString("Lunes"),
-                materia.optString("Martes"),
-                materia.optString("Miercoles"),
-                materia.optString("Jueves"),
-                materia.optString("Viernes"),
-                materia.optString("Sabado")
-            ).filter { it.isNotBlank() }
-                .joinToString(" | ")
-
-            lista.add(
-                CargaAcademicaEntity(
-                    matricula = matricula,
-                    claveMateria = materia.optString("clvOficial"),
-                    nombreMateria = materia.optString("Materia"),
-                    grupo = materia.optString("Grupo"),
-                    docente = materia.optString("Docente"),
-                    creditos = materia.optInt("CreditosMateria"),
-                    horario = horario,
-                    semestre = semestre,
-                    ultimaActualizacion = System.currentTimeMillis()
-                )
-            )
+        } catch (e: Exception) {
+            println("[CARGA_PARSE] Error parseando JSON: ${e.message}")
         }
 
         return lista
     }
+
+    private fun mapToCargaAcademica(
+        item: JsonObject,
+        matricula: String,
+        semestre: Int,
+        timestamp: Long
+    ): CargaAcademica {
+
+        // Construye el horario concatenando los días que no estén vacíos
+        val horario = listOf("Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado")
+            .mapNotNull { dia ->
+                item[dia]?.jsonPrimitive?.contentOrNull
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { "$dia: $it" }
+            }
+            .joinToString(" | ")
+
+        return CargaAcademica(
+            matricula     = matricula,
+            claveMateria  = item["clvOficial"]?.jsonPrimitive?.contentOrNull ?: "",
+            nombreMateria = item["Materia"]?.jsonPrimitive?.contentOrNull ?: "Desconocida",
+            grupo         = item["Grupo"]?.jsonPrimitive?.contentOrNull ?: "",
+            docente       = item["Docente"]?.jsonPrimitive?.contentOrNull ?: "",
+            creditos      = item["CreditosMateria"]?.jsonPrimitive?.intOrNull ?: 0,
+            horario       = horario,
+            semestre      = semestre,
+            ultimaActualizacion = timestamp
+        )
+    }
+
+
 }
