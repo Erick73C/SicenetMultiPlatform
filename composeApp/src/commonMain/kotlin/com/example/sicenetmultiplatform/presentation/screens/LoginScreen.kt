@@ -30,7 +30,7 @@ private val GreenDark    = Color(0xFF1B5E20)
  * Maneja login online y offline.
  * Basada en LoginScreen.kt del proyecto Android original.
  *
- * @author Erick Omar Pérez González
+ * @author
  */
 @Composable
 fun LoginScreen(

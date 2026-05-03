@@ -8,7 +8,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sicenetmultiplatform.SessionManager
 import com.example.sicenetmultiplatform.data.di.AppContainer
+import com.example.sicenetmultiplatform.presentation.screens.CalificacionesScreen
+import com.example.sicenetmultiplatform.presentation.screens.CardexScreen
+import com.example.sicenetmultiplatform.presentation.screens.CargaAcademicaScreen
 import com.example.sicenetmultiplatform.presentation.screens.LoginScreen
+import com.example.sicenetmultiplatform.presentation.screens.PerfilScreen
 import com.example.sicenetmultiplatform.presentation.viewmodel.CalificacionesViewModel
 import com.example.sicenetmultiplatform.presentation.viewmodel.CardexViewModel
 import com.example.sicenetmultiplatform.presentation.viewmodel.CargaAcademicaViewModel
@@ -24,7 +28,7 @@ fun AppNavigation(
         startDestination = Routes.LOGIN
     ) {
 
-        // ── Login ──────────────────────────────────────────────────
+        // Login
         composable(Routes.LOGIN) {
             val viewModel = remember {
                 LoginViewModel(
@@ -43,7 +47,7 @@ fun AppNavigation(
             )
         }
 
-        // ── Perfil ─────────────────────────────────────────────────
+        // Perfil
         composable(Routes.PERFIL) {
             val viewModel = remember {
                 PerfilViewModel(
@@ -52,11 +56,11 @@ fun AppNavigation(
                 )
             }
             AppScaffold(navController = navController) {
-                // TODO: PerfilScreen(viewModel)
+                PerfilScreen(viewModel = viewModel)
             }
         }
 
-        // ── Carga Académica ────────────────────────────────────────
+        // Carga Académica
         composable(Routes.CARGA) {
             val viewModel = remember {
                 CargaAcademicaViewModel(
@@ -66,11 +70,11 @@ fun AppNavigation(
                 )
             }
             AppScaffold(navController = navController) {
-                // TODO: CargaAcademicaScreen(viewModel)
+                CargaAcademicaScreen(viewModel = viewModel)
             }
         }
 
-        // ── Cardex ─────────────────────────────────────────────────
+        // Cardex
         composable(Routes.CARDEX) {
             val viewModel = remember {
                 CardexViewModel(
@@ -79,11 +83,11 @@ fun AppNavigation(
                 )
             }
             AppScaffold(navController = navController) {
-                // TODO: CardexScreen(viewModel)
+                CardexScreen(viewModel = viewModel)
             }
         }
 
-        // ── Calificaciones ─────────────────────────────────────────
+        // Calificaciones
         composable(Routes.CALIFICACIONES) {
             val viewModel = remember {
                 CalificacionesViewModel(
@@ -93,7 +97,7 @@ fun AppNavigation(
                 )
             }
             AppScaffold(navController = navController) {
-                // TODO: CalificacionesScreen(viewModel)
+                CalificacionesScreen(viewModel = viewModel)
             }
         }
     }
