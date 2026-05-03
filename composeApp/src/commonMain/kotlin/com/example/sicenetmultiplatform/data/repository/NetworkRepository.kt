@@ -40,12 +40,13 @@ class NetworkRepository(
 
             if (accesoCorrecto) {
                 LoginResult(success = true, message = "Login correcto")
-            } else {
-                LoginResult(success = false, message = "Credenciales inválidas")
+            }  else {
+                LoginResult(success = false, message = "Credenciales inválidas", sinConexion = false)
             }
+
         } catch (e: Exception) {
             println("[NETWORK_REPO] Error en login: ${e.message}")
-            LoginResult(success = false, message = e.message ?: "Error de conexión")
+            LoginResult(success = false, message = e.message, sinConexion = true)
         }
     }
 

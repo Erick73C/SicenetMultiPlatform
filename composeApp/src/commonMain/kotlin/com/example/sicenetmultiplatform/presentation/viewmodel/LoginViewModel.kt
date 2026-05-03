@@ -50,37 +50,39 @@ class LoginViewModel(
 
             val usuarioNormalizado = usuario.trim().uppercase()
 
-            try {
-                // Intento online
-                val resultado = networkRepository.login(usuarioNormalizado, password)
+            val resultado = networkRepository.login(usuarioNormalizado, password)
 
-                if (resultado.success) {
+            when {
+                // Caso 1: Login exitoso online
+                resultado.success -> {
                     SessionManager.iniciarSesion(usuarioNormalizado)
-
-                    // Sincroniza el perfil inmediatamente después del login
                     sincronizarPerfil(usuarioNormalizado)
-
+                    _isLoading.value = false
                     onSuccess()
-                } else {
+                }
+
+                // Caso 2: Sin conexión intenta offline
+                resultado.sinConexion -> {
+                    println("[LOGIN_VM] Sin conexión, buscando datos locales")
+                    val perfilLocal = localRepository
+                        .obtenerPerfil(usuarioNormalizado)
+                        .first()
+
+                    if (perfilLocal != null) {
+                        SessionManager.iniciarSesion(usuarioNormalizado)
+                        _isLoading.value = false
+                        onSuccess()
+                    } else {
+                        _error.value = "Sin conexión y sin datos guardados"
+                        _isLoading.value = false
+                    }
+                }
+
+                // Caso 3: Credenciales inválidas
+                else -> {
                     _error.value = resultado.message ?: "Credenciales inválidas"
+                    _isLoading.value = false
                 }
-
-            } catch (e: Exception) {
-                // Fallback offline
-                println("[LOGIN_VM] Sin conexión, buscando datos locales: ${e.message}")
-
-                val perfilLocal = localRepository
-                    .obtenerPerfil(usuarioNormalizado)
-                    .first()
-
-                if (perfilLocal != null) {
-                    SessionManager.iniciarSesion(usuarioNormalizado)
-                    onSuccess()
-                } else {
-                    _error.value = "Sin conexión y sin datos guardados"
-                }
-            } finally {
-                _isLoading.value = false
             }
         }
     }
