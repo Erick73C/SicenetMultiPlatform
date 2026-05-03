@@ -48,6 +48,12 @@ kotlin {
             // Plugins de Ktor
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.auth)
+            // Navegación
+            implementation(libs.navigation.compose)
+
+            // Iconos extendidos
+            implementation(compose.materialIconsExtended)
+            implementation(libs.androidx.savedstate)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
