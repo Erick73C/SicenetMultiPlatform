@@ -106,6 +106,10 @@ compose.desktop {
     application {
         mainClass = "com.example.sicenetmultiplatform.MainKt"
 
+        buildTypes.release.proguard {
+            isEnabled.set(false)
+        }
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.example.sicenetmultiplatform"
